@@ -3,6 +3,19 @@
 export XLA_PYTHON_CLIENT_MEM_FRACTION=.90
 export CUDA_VISIBLE_DEVICES=0
 
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+REPO_ROOT=$(cd "${SCRIPT_DIR}/../.." && pwd)
+
+# On macOS, force CPU backend to avoid noisy TPU backend probing.
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    export JAX_PLATFORMS="${JAX_PLATFORMS:-cpu}"
+fi
+
+PYTHON_BIN="${PYTHON_BIN:-python3}"
+if [[ -x "${REPO_ROOT}/.venv/bin/python" ]]; then
+    PYTHON_BIN="${REPO_ROOT}/.venv/bin/python"
+fi
+
 
 UNIXTIME=$(date +%s)
 AGENT_CLASS="ppo"
@@ -13,7 +26,6 @@ TD="dtd" # baseline / naive / dtd
 NOISE_LVL="0.01"
 NOISE_LVL_STR=$(echo $NOISE_LVL | sed 's/\.//g')
 
-SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 source "${SCRIPT_DIR}/incumbent/${AGENT_CLASS}/${ENV_NAME}/${TD}/noise_lvl${NOISE_LVL_STR}.sh"
 
 
@@ -24,8 +36,10 @@ echo "TD: $TD"
 echo "=============================="
 
 
-python3 ${AGENT_CLASS}/main.py \
-    hydra.run.dir="configs/logs/${AGENT_CLASS}/${ENV_NAME}/${TD}/noise${NOISE_LVL_STR}/${UNIXTIME}" \
+cd "${REPO_ROOT}" || exit 1
+
+"${PYTHON_BIN}" -m dtd.${AGENT_CLASS}.main \
+    hydra.run.dir="${REPO_ROOT}/dtd/configs/logs/${AGENT_CLASS}/${ENV_NAME}/${TD}/noise${NOISE_LVL_STR}/${UNIXTIME}" \
     env.name=${ENV_NAME} \
     env.noise_lvl=${NOISE_LVL} \
     algorithm=${AGENT_CLASS}_${TD} \

@@ -1,0 +1,45 @@
+# macOS CPU environment used to run dTD/PPO successfully in this repository.
+#
+# Install with pip:
+#   pip install -r requirements/macos-cpu.txt
+#
+# Install with uv:
+#   uv pip install -r requirements/macos-cpu.txt
+
+# Local package (Hydra plugin + repo metadata)
+-e .
+
+# Tuning and sweeper dependencies used in this repo
+hydra-core
+hydra-optuna-sweeper
+dehb==0.0.5
+scipy==1.12.0
+
+# JAX/Brax stack (CPU)
+jax[cpu]
+flax
+optax
+orbax-checkpoint
+chex
+brax
+rlax
+distrax
+gymnasium
+
+# Data / plotting / utils
+pyyaml
+tqdm
+matplotlib
+seaborn
+plotly
+imageio
+polars
+
+# Additional runtime packages used by the codebase
+tensorflow
+torch
+torchvision
+
+# Warning cleanup / optional runtime imports
+wandb==0.25.1
+warp-lang==1.12.0

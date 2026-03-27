@@ -1,5 +1,6 @@
 import os
 import json
+import warnings
 import hydra
 from omegaconf import DictConfig, OmegaConf
 
@@ -14,6 +15,11 @@ from dtd.common.train import evaluate_policy, calculate_return_stats_per_update
 from dtd.common.utils import create_ckpt_mngr
 from dtd.ppo.networks import setup_network
 from dtd.ppo.train import train_baseline, train_naive_dtd, train_dtd
+
+warnings.filterwarnings(
+    "ignore",
+    message="Brax System, piplines and environments are not actively being maintained.*",
+)
 
 @hydra.main(config_path="../configs", config_name="config", version_base="1.3")
 def main(cfg: DictConfig):
