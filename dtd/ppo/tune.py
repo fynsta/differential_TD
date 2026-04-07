@@ -1,4 +1,5 @@
 import hydra
+from typing import cast
 from omegaconf import DictConfig
 
 import jax
@@ -34,8 +35,10 @@ def main(cfg: DictConfig):
     env = create_env(
         env_name=cfg.env.name,
         backend=cfg.env.backend,
+        framework=cfg.env.framework,
         noise_lvl=cfg.env.noise_lvl,
         batch_size=cfg.env.num_envs,
+        merton=cfg.env.merton,
     )
     cfg.env.action_size = env.action_size
     cfg.env.observation_size = env.observation_size
@@ -45,8 +48,8 @@ def main(cfg: DictConfig):
     rng, setup_rng = jax.random.split(rng)
     network = setup_network(
         rng=setup_rng,
-        action_size=cfg.env.action_size,
-        observation_size=cfg.env.observation_size,
+        action_size=cast(int, env.action_size),
+        observation_size=cast(int, env.observation_size),
         activation=cfg.algorithm.model_kwargs.activation,
         learning_rate=cfg.algorithm.model_kwargs.learning_rate,
         max_grad_norm=cfg.algorithm.max_grad_norm,
@@ -128,8 +131,10 @@ def main(cfg: DictConfig):
     eval_env = create_env(
         env_name=cfg.env.name,
         backend=cfg.env.backend,
+        framework=cfg.env.framework,
         noise_lvl=cfg.env.noise_lvl,
         batch_size=cfg.env.num_envs_for_eval,
+        merton=cfg.env.merton,
     )
 
     minus_mean_reward = evaluate_policy(rng, eval_env, network, cfg.algorithm.num_env_steps_for_eval)

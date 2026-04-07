@@ -8,6 +8,8 @@ from flax import struct
 from brax import envs
 from brax.envs.base import Env, State, Wrapper
 
+from dtd.common.merton_env import MertonVectorEnv
+
 
 class NoiseWrapper(Wrapper):
     def __init__(self, env: Env, noise_lvl: float):
@@ -169,12 +171,14 @@ class VmapWrapper(Wrapper):
 def create_env(
     env_name: str,
     backend: str,
+    framework: str = "brax",
     noise_lvl: Optional[float] = 0,
     episode_length: int = 1000,
     action_repeat: int = 1,
     auto_reset: bool = True,
     logging: bool = True,
     batch_size: Optional[int] = None,
+    merton: Optional[Dict[str, Any]] = None,
 ):
     """Creates an environment from the registry.
 
@@ -189,6 +193,20 @@ def create_env(
     Returns:
         env: an environment
     """
+    if framework == "merton":
+        merton_cfg = merton or {}
+        return MertonVectorEnv(
+            batch_size=batch_size or 1,
+            dt=float(merton_cfg.get("dt", 0.02)),
+            horizon=float(merton_cfg.get("horizon", 1.0)),
+            mu=float(merton_cfg.get("mu", 0.08)),
+            sigma=float(merton_cfg.get("sigma", 0.2)),
+            risk_free_rate=float(merton_cfg.get("risk_free_rate", 0.02)),
+            initial_wealth=float(merton_cfg.get("initial_wealth", 1.0)),
+            action_limit=float(merton_cfg.get("action_limit", 2.0)),
+            noise_lvl=float(noise_lvl or 0.0),
+        )
+
     env = envs.get_environment(env_name=env_name, backend=backend)
     env = NoiseWrapper(env, noise_lvl)
 

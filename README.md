@@ -46,6 +46,26 @@ The most critical options are:
 
 You can also adjust `MAX_BUDGET` and `MIN_BUDGET` depending on your available computational resources.
 
+### Merton Framework
+
+To run the Merton portfolio framework, switch the environment framework to `merton` and use the built-in Merton parameters:
+
+```bash
+.venv/bin/python -m dtd.ppo.main \
+   env.framework=merton \
+   env.name=merton \
+   algorithm=ppo_dtd \
+   env.num_envs=64 \
+   env.noise_lvl=0.0 \
+   run_time=$(date +%s)
+```
+
+You can override Merton model parameters directly from Hydra, e.g.:
+
+```bash
+env.merton.mu=0.08 env.merton.sigma=0.2 env.merton.risk_free_rate=0.02 env.merton.horizon=1.0 env.merton.dt=0.02
+```
+
 
 ## Acknowledgements
 

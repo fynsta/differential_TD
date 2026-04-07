@@ -1,6 +1,7 @@
 import os
 import json
 import warnings
+from typing import cast
 import hydra
 from omegaconf import DictConfig, OmegaConf
 
@@ -43,8 +44,10 @@ def main(cfg: DictConfig):
     env = create_env(
         env_name=cfg.env.name,
         backend=cfg.env.backend,
+        framework=cfg.env.framework,
         noise_lvl=cfg.env.noise_lvl,
         batch_size=cfg.env.num_envs,
+        merton=cfg.env.merton,
     )
     cfg.env.action_size = env.action_size
     cfg.env.observation_size = env.observation_size
@@ -54,8 +57,8 @@ def main(cfg: DictConfig):
     rng, setup_rng = jax.random.split(rng)
     network = setup_network(
         rng=setup_rng,
-        action_size=cfg.env.action_size,
-        observation_size=cfg.env.observation_size,
+        action_size=cast(int, env.action_size),
+        observation_size=cast(int, env.observation_size),
         activation=cfg.algorithm.model_kwargs.activation,
         learning_rate=cfg.algorithm.model_kwargs.learning_rate,
         max_grad_norm=cfg.algorithm.max_grad_norm,

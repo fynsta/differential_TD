@@ -25,6 +25,7 @@ run_name: _
 run_time: _
 env:
   name: ant
+  framework: brax
   backend: generalized
   num_envs: 64
   num_envs_for_eval: 32
@@ -32,6 +33,14 @@ env:
   action_size: _
   observation_size: _
   dt: _
+  merton:
+    dt: 0.02
+    horizon: 1.0
+    mu: 0.08
+    sigma: 0.2
+    risk_free_rate: 0.02
+    initial_wealth: 1.0
+    action_limit: 2.0
 
 load: false
 save: false

@@ -1,15 +1,14 @@
 import jax
 import jax.numpy as jnp
-
-from brax.envs.base import Env
+from typing import Any
 
 from dtd.common.train import Transition, dsV_s_fn, dsV_ssds_fn
 from dtd.ppo.networks import ActorCritic
 
 
 def train_baseline(
-    rng: jax.random.PRNGKey,
-    env: Env,
+    rng: jax.Array,
+    env: Any,
     num_envs: int,
     noise_lvl: float,
     network: ActorCritic,
@@ -169,8 +168,8 @@ def train_baseline(
 
 
 def train_naive_dtd(
-    rng: jax.random.PRNGKey,
-    env: Env,
+    rng: jax.Array,
+    env: Any,
     num_envs: int,
     noise_lvl: float,
     network: ActorCritic,
@@ -363,8 +362,8 @@ def train_naive_dtd(
 
 
 def train_dtd(
-    rng: jax.random.PRNGKey,
-    env: Env,
+    rng: jax.Array,
+    env: Any,
     num_envs: int,
     noise_lvl: float,
     network: ActorCritic,
