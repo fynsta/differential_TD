@@ -97,8 +97,8 @@ def main(cfg: DictConfig):
             normalize_advantage=cfg.algorithm.model_kwargs.normalize_advantage,
             mix_ratio=cfg.algorithm.model_kwargs.mix_ratio,
         )
-    elif cfg.algorithm.TD=="dtd":
-        print(f'TD type: dtd')
+    elif cfg.algorithm.TD in ("dtd", "dtd_full"):
+        print(f'TD type: dTD (mix_ratio={cfg.algorithm.model_kwargs.mix_ratio})')
         (rng, network, _, _), metrics = train_dtd(
             rng=rng,
             env=env,
@@ -121,7 +121,7 @@ def main(cfg: DictConfig):
     else:
         raise ValueError(
         f"Invalid value for cfg.algorithm.TD: {cfg.algorithm.TD}. "
-        "Expected 'baseline' or 'dtd'."
+        "Expected 'baseline', 'dtd', or 'dtd_full'."
     )
 
 

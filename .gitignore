@@ -11,4 +11,7 @@
 **/.DS_Store
 **/tests/
 **/hpo_results/
-**/results/
+
+.venv/
+slurm_logs/
+**/results/metrics/

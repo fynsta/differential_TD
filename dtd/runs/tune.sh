@@ -24,7 +24,7 @@ ENV_NAME="hopper"
 MAX_BUDGET="1e7"
 MIN_BUDGET="1e5"
 
-TD="dtd" # baseline / naive / dtd
+TD="dtd_full" # baseline / naive / dtd / dtd_full
 NOISE_LVL="0.01"
 NOISE_LVL_STR=$(echo $NOISE_LVL | sed 's/\.//g')
 

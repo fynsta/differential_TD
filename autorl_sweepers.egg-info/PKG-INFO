@@ -27,7 +27,7 @@ Requires-Dist: configspace==0.7.1
 Requires-Dist: wandb==0.15.5
 Requires-Dist: pre-commit==3.3.3
 Provides-Extra: dehb
-Requires-Dist: dehb@ git+https://github.com/automl/DEHB.git@master ; extra == "dehb"
+Requires-Dist: dehb @ git+https://github.com/automl/DEHB.git@master ; extra == "dehb"
 Provides-Extra: pb2
 Requires-Dist: GPy==1.10.0; extra == "pb2"
 Requires-Dist: scipy==1.11.1; extra == "pb2"

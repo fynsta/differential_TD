@@ -1,7 +1,7 @@
 #!/bin/bash
 
 export XLA_PYTHON_CLIENT_MEM_FRACTION=.90
-export CUDA_VISIBLE_DEVICES=0
+export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0}"
 
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 REPO_ROOT=$(cd "${SCRIPT_DIR}/../.." && pwd)
@@ -17,22 +17,30 @@ if [[ -x "${REPO_ROOT}/.venv/bin/python" ]]; then
 fi
 
 
-UNIXTIME=$(date +%s)
-AGENT_CLASS="ppo"
-ENV_NAME="hopper"
-MAX_BUDGET="2500000"
+UNIXTIME="${RUN_TIME:-$(date +%s)}"
+AGENT_CLASS="${AGENT_CLASS:-ppo}"
+ENV_NAME="${ENV_NAME:-hopper}"
+MAX_BUDGET="${MAX_BUDGET:-2500000}"
 
-TD="dtd" # baseline / naive / dtd
-NOISE_LVL="0.01"
+TD="${TD:-dtd}" # baseline / naive / dtd
+NOISE_LVL="${NOISE_LVL:-0.01}"
 NOISE_LVL_STR=$(echo $NOISE_LVL | sed 's/\.//g')
 
-source "${SCRIPT_DIR}/incumbent/${AGENT_CLASS}/${ENV_NAME}/${TD}/noise_lvl${NOISE_LVL_STR}.sh"
+INCUMBENT_PATH="${SCRIPT_DIR}/incumbent/${AGENT_CLASS}/${ENV_NAME}/${TD}/noise_lvl${NOISE_LVL_STR}.sh"
+if [[ ! -f "${INCUMBENT_PATH}" ]]; then
+    echo "Missing incumbent parameter file: ${INCUMBENT_PATH}" >&2
+    exit 1
+fi
+
+source "${INCUMBENT_PATH}"
 
 
 echo "Running experiment with:"
 echo "ENV_NAME: $ENV_NAME"
 echo "NOISE_LVL: $NOISE_LVL"
 echo "TD: $TD"
+echo "RUN_TIME: $UNIXTIME"
+echo "INCUMBENT_PATH: $INCUMBENT_PATH"
 echo "=============================="
 
 
@@ -54,4 +62,5 @@ cd "${REPO_ROOT}" || exit 1
     algorithm.model_kwargs.normalize_advantage=${NORMALIZE_ADVANTAGE} \
     algorithm.model_kwargs.vf_coef=${VF_COEF} \
     algorithm.model_kwargs.ent_coef=${ENT_COEF} \
-    run_time=${UNIXTIME}
+    run_time=${UNIXTIME} \
+    "$@"

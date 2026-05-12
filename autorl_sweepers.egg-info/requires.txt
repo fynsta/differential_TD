@@ -13,7 +13,7 @@ scipy==1.11.1
 scikit-learn==1.3.0
 
 [dehb]
-dehb@ git+https://github.com/automl/DEHB.git@master
+dehb @ git+https://github.com/automl/DEHB.git@master
 
 [dev]
 pytest
