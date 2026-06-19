@@ -5,27 +5,24 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 ROOT = Path("results/metrics/ppo")
+INCLUDE_PURE_DTD = False
 PLOTS = [
     (
         Path("plots/all_envs_average.png"),
         {
-            "baseline": ("TD", "#4C72B0"),
-            "dtd": (r"$\beta$-dTD", "#55A868"),
-            "dtd_full": (r"dTD ($\beta$=1)", "#C44E52"),
-        },
-        None,
-    ),
-    (
-        Path("plots/all_envs_average_no_dtd.png"),
-        {
-            "baseline": ("TD", "#4C72B0"),
-            "dtd": (r"$\beta$-dTD", "#55A868"),
+            "baseline": ("TD", "#808080"),
+            "dtd": (r"$\beta$-dTD", "#C44E52"),
+            **(
+                {"dtd_full": (r"dTD ($\beta$=1)", "#8B1E3F")}
+                if INCLUDE_PURE_DTD
+                else {}
+            ),
         },
         -1000,
     ),
 ]
 
-ENVS = ["hopper", "ant", "humanoid", "halfcheetah"]
+ENVS = ["hopper", "halfcheetah", "ant", "humanoid"]
 
 NOISES = [
     ("0.00", "000"),
@@ -80,7 +77,6 @@ for out, algs, y_floor in PLOTS:
         row_mean_max = -np.inf
         for col, (noise_label, noise_suffix) in enumerate(NOISES):
             ax = axes[row][col]
-            beta_for_plot = None
 
             for alg, (label, color) in algs.items():
                 runs = load_runs(env, alg, noise_suffix)
@@ -96,10 +92,7 @@ for out, algs, y_floor in PLOTS:
                     f"final={mean[-1]:.2f} ± {std[-1]:.2f}"
                 )
 
-                ax.plot(x, mean, label=label, color=color, linewidth=2)
-                ax.fill_between(x, mean - std, mean + std, color=color, alpha=0.18)
-                row_mean_min = min(row_mean_min, float(mean.min()))
-                row_mean_max = max(row_mean_max, float(mean.max()))
+                label_for_plot = label
                 if alg == "dtd":
                     beta_values = sorted(
                         {
@@ -109,27 +102,50 @@ for out, algs, y_floor in PLOTS:
                         }
                     )
                     if beta_values:
-                        beta_for_plot = beta_values[0]
+                        label_for_plot = rf"$\beta$-dTD ($\beta$={beta_values[0]:.3f})"
+
+                if alg == "baseline":
+                    line_width = 1.8
+                    line_alpha = 0.85
+                    line_style = "--"
+                else:
+                    line_width = 2.4 if alg == "dtd" else 2.0
+                    line_alpha = 1.0 if alg == "dtd" else 0.9
+                    line_style = "-"
+                ax.plot(
+                    x,
+                    mean,
+                    label=label_for_plot,
+                    color=color,
+                    linewidth=line_width,
+                    alpha=line_alpha,
+                    linestyle=line_style,
+                )
+                ax.fill_between(x, mean - std, mean + std, color=color, alpha=0.12)
+                row_mean_min = min(row_mean_min, float(mean.min()))
+                row_mean_max = max(row_mean_max, float(mean.max()))
 
             if col == 0:
-                ax.set_ylabel(f"{env.capitalize()}\nEpisodic return")
-            if row == 0:
-                ax.set_title(f"noise: {noise_label}")
-            elif row == len(ENVS) - 1:
+                ax.set_ylabel("Episodic return", fontsize=13)
+            ax.set_title(f"{env.capitalize()} (Noise: {noise_label})")
+            if row == len(ENVS) - 1:
                 ax.set_xlabel("Total episode step")
 
             ax.set_xlim(0, 2_500_000)
-            ax.grid(alpha=0.25)
-            if beta_for_plot is not None:
-                ax.text(
-                    0.97,
-                    0.03,
-                    rf"$\beta$={beta_for_plot:.3f}",
-                    transform=ax.transAxes,
-                    color=algs["dtd"][1],
-                    fontsize=10,
-                    ha="right",
-                    va="bottom",
+            ax.grid(alpha=0.15, linestyle="--", linewidth=0.7)
+            ax.set_xticks(np.arange(0, 2_500_001, 1_000_000))
+            y_tick_step = 250 if env == "humanoid" else 1000
+            ax.set_yticks(np.arange(-1000, 8001, y_tick_step))
+            ax.ticklabel_format(axis="y", style="sci", scilimits=(3, 3), useMathText=True)
+            ax.tick_params(axis="both", which="major", direction="out", length=4, width=0.8)
+            if col == 0:
+                handles, labels = ax.get_legend_handles_labels()
+                order = sorted(range(len(labels)), key=lambda i: labels[i] == "TD")
+                ax.legend(
+                    [handles[i] for i in order],
+                    [labels[i] for i in order],
+                    frameon=False,
+                    loc="upper left",
                 )
 
         if np.isfinite(row_mean_min) and np.isfinite(row_mean_max):
@@ -138,10 +154,9 @@ for out, algs, y_floor in PLOTS:
             else:
                 pad = (row_mean_max - row_mean_min) * 0.05
             for ax in axes[row]:
-                ymin = row_mean_min - pad if y_floor is None else y_floor
+                ymin = max(y_floor, row_mean_min - pad)
                 ax.set_ylim(ymin, row_mean_max + pad)
 
-    axes[0][0].legend(frameon=False, loc="upper left")
     fig.tight_layout()
     fig.savefig(out, dpi=200)
     plt.close(fig)
